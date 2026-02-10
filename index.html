@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charan Raj | VR & 3D Developer</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap');
+
+        :root {
+            --primary-glow: #3b82f6;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            
+            /* --- FIX: Removes Blinking Cursor & Text Selection --- */
+            cursor: none;
+            user-select: none;
+            -webkit-user-select: none;
+            caret-color: transparent;
+            
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        /* --- BACKGROUND --- */
+        .tech-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%), 
+                        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+            background-color: #0b0f19;
+        }
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
+        }
+
+        /* --- NAVIGATION --- */
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* --- TYPOGRAPHY --- */
+        .gradient-text {
+            background: linear-gradient(to right, #60a5fa, #c084fc, #60a5fa);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            background-size: 200% auto; animation: gradient-text 5s ease infinite;
+        }
+        @keyframes gradient-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* --- CARDS --- */
+        .project-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(5px);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 20px 40px -5px rgba(59, 130, 246, 0.2);
+            z-index: 10;
+        }
+        .project-card-overlay {
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.4));
+        }
+
+        /* --- BUTTONS --- */
+        .glow-button {
+            position: relative; overflow: hidden; transition: all 0.3s ease;
+            background: linear-gradient(90deg, #3b82f6, #6366f1); z-index: 1;
+        }
+        .glow-button:hover { box-shadow: 0 0 20px rgba(99, 102, 241, 0.6); transform: translateY(-2px); }
+
+        .tab-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+        .tab-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+        .tab-btn.active-tab { background: #3b82f6; border-color: #3b82f6; color: white; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+
+        /* --- CURSOR FIX --- */
+        #cursor-dot {
+            width: 20px; height: 20px; background: white; border-radius: 50%;
+            position: fixed; pointer-events: none; 
+            z-index: 20000; /* HIGH Z-INDEX TO STAY ON TOP */
+            mix-blend-mode: difference; transition: transform 0.1s; transform: translate(-50%, -50%);
+        }
+
+        /* --- ANIMATIONS --- */
+        .animate-fadeInUp { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.2s; }
+        
+        #intro-overlay { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; justify-content: center; align-items: center; }
+        
+        /* Modal */
+        .graphic-design-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000;
+            display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .graphic-design-modal.active { opacity: 1; visibility: visible; }
+        .graphic-design-modal img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="tech-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <div id="intro-overlay">
+        <video id="intro-video" class="absolute inset-0 w-full h-full object-cover opacity-80" autoplay muted playsinline>
+            <source src="intro2.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div id="main-content" style="opacity: 0; transition: opacity 1s ease;">
+        
+        <header id="main-header" class="fixed top-0 left-0 w-full glass-nav py-4 px-6 z-50 flex justify-between items-center transition-all duration-300">
+            <div class="text-2xl font-bold tracking-wider gradient-text">CHARAN RAJ</div>
+            <nav>
+                <ul class="flex space-x-8">
+                    <li><a href="#about" class="text-sm uppercase tracking-widest text-gray-400 hover:text-white transition-colors">About</a></li>
+                    <li><a href="#portfolio" class="text-sm uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Work</a></li>
+                    <li><a href="#contact" class="text-sm uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section id="hero" class="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600 rounded-full filter blur-[120px] opacity-20 animate-pulse"></div>
+
+            <div class="text-center max-w-5xl z-10">
+                <h2 class="text-6xl md:text-8xl font-black leading-tight mb-6 animate-fadeInUp">
+                    DESIGNING <br> <span class="gradient-text">TOMORROW</span>
+                </h2>
+                <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto font-light animate-fadeInUp delay-100">
+                    Crafting intuitive and beautiful digital experiences for a seamless user journey.
+                </p>
+                <a href="#portfolio" class="glow-button inline-block text-white px-10 py-4 rounded-full text-lg font-semibold animate-fadeInUp delay-200">
+                    Explore My Universe
+                </a>
+            </div>
+            
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500">
+                <i class="fas fa-chevron-down text-xl"></i>
+            </div>
+        </section>
+
+        <section id="about" class="py-32 px-4 relative">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
+                
+                <div class="md:w-1/3 relative group flex justify-center">
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500 rounded-full filter blur-[80px] opacity-20 group-hover:opacity-40 transition duration-500 z-0"></div>
+                    
+                    <img src="About.png" alt="Charan Raj" class="relative z-10 w-80 object-cover rounded-3xl border-2 border-blue-500 transform group-hover:scale-105 transition duration-500 filter drop-shadow-2xl">
+                </div>
+
+                <div class="md:w-2/3 text-center md:text-left">
+                    <h3 class="text-sm uppercase tracking-[0.2em] text-blue-400 mb-2 font-bold">The Creator</h3>
+                    <h2 class="text-5xl font-bold mb-8 text-white">About Me</h2>
+                    <p class="text-lg text-gray-300 leading-relaxed font-light mb-6">
+                        I’m <span class="text-white font-semibold">Charan Raj</span>, a 3D designer, game developer, and VR/AR creator. I craft immersive digital experiences that blend creativity with technology. From detailed 3D models to interactive virtual worlds, my work brings ideas to life.
+                    </p>
+                    <p class="text-lg text-gray-300 leading-relaxed font-light">
+                        I’ve developed projects ranging from virtual college tours to AI-driven companions. Passionate about innovation, I constantly explore new tools and techniques, aiming to create experiences that inspire, engage, and leave a lasting impact.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="portfolio" class="py-32 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h3 class="text-5xl font-bold mb-4 text-white">Selected Works</h3>
+                    <div class="h-1 w-24 bg-blue-500 mx-auto rounded-full"></div>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4 mb-16">
+                    <button class="tab-btn px-6 py-3 rounded-full font-medium transition-all duration-300 active-tab" data-domain="3d-modelling">3D Modelling</button>
+                    <button class="tab-btn px-6 py-3 rounded-full font-medium transition-all duration-300" data-domain="renderings">Renderings</button>
+                    <button class="tab-btn px-6 py-3 rounded-full font-medium transition-all duration-300" data-domain="graphic-design">Graphic Design</button>
+                    <button class="tab-btn px-6 py-3 rounded-full font-medium transition-all duration-300" data-domain="virtual-reality">Virtual Reality</button>
+                    <button class="tab-btn px-6 py-3 rounded-full font-medium transition-all duration-300" data-domain="achievements">Achievements</button>
+                </div>
+
+                <div id="3d-modelling-projects" class="portfolio-content grid md:grid-cols-2 gap-8">
+                     <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="REC Logo" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/7fe45441e9724fb1aa9144c5aa1c5deb/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Old Logo" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/a4f68067feed49cfbd336238a29a075e/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Bench" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/a5bc7194ef754829aedffe84a83ddf4c/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Window" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/35e101c858694f3e9b58f39aa6acc065/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Chalkboard" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/cb5a654c1d554ded9e32090996805463/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Door" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/8e2d4d237f084898aca64c4dd627e72d/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Podium" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/028488073b3348e78695b934ad74d79a/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Digital Board" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/dc34c063bd2f4ce3965ebf584c11fa9a/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Office Table" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/0280d34231814ea68954cf25e313876f/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Office Table 2" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/ae8184cd4fea44b49c9b843934abb423/embed"></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                         <iframe class="w-full h-full" title="Honey Comb" frameborder="0" allowfullscreen allow="autoplay; fullscreen; xr-spatial-tracking" src="https://sketchfab.com/models/7516b42c34d5462e85bed7fdd056e17d/embed"></iframe>
+                    </div>
+                </div>
+
+                <div id="renderings-projects" class="portfolio-content hidden grid md:grid-cols-2 gap-8">
+                     <div class="project-card h-80 relative group graphic-design-item clickable-tile">
+                        <img src="3D_Output.png" alt="Classroom" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent pointer-events-none">
+                            <p class="text-white text-lg font-bold">Classroom Render</p>
+                        </div>
+                    </div>
+                    <div class="project-card h-80 relative">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/lMpLZzwjezI" title="Mutrum Video" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <div class="project-card h-80 relative">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/lx-t-NbtntQ" title="Mutrum Video 2" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+
+                <div id="graphic-design-projects" class="portfolio-content hidden grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Auraverse.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Envy.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Front.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Chiyaan63.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Christmas.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Pongal.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Artboard 1.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="VinayagarArtboard 1.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Logo_Christmas.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Pongal_Logo.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="EarPiercing11.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="project-card h-64 relative group graphic-design-item clickable-tile cursor-pointer">
+                        <img src="Expo.png" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                </div>
+
+                <div id="virtual-reality-projects" class="portfolio-content hidden grid md:grid-cols-2 gap-10">
+                    <div class="project-card relative h-96 group cursor-pointer">
+                        <img src="COVER (2).png" alt="VR Project 1" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="project-card-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8">
+                            <h4 class="text-3xl font-bold text-white mb-2 translate-y-4 group-hover:translate-y-0 transition duration-500">Meta Campus: Project REC</h4>
+                            <p class="text-gray-300 mb-4 translate-y-4 group-hover:translate-y-0 transition duration-500 delay-75">AI-Powered Virtual Reality Campus Tour</p>
+                            <a href="details_ProjectREC.html" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-semibold w-max translate-y-4 group-hover:translate-y-0 transition duration-500 delay-100 hover:bg-blue-500">View Project</a>
+                        </div>
+                    </div>
+                    <div class="project-card relative h-96 group cursor-pointer">
+                        <img src="COVER (3).png" alt="Soul Link" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="project-card-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8">
+                            <h4 class="text-3xl font-bold text-white mb-2 translate-y-4 group-hover:translate-y-0 transition duration-500">Soul Link</h4>
+                            <p class="text-gray-300 mb-4 translate-y-4 group-hover:translate-y-0 transition duration-500 delay-75">VR + AI Historical Figure Conversation</p>
+                            <a href="details_SoulLink.html" class="inline-block bg-yellow-600 text-white px-6 py-2 rounded-full text-sm font-semibold w-max translate-y-4 group-hover:translate-y-0 transition duration-500 delay-100 hover:bg-yellow-500">View Project</a>
+                        </div>
+                    </div>
+                    <div class="project-card relative h-96 group cursor-pointer">
+                        <img src="COVER (5).png" alt="Heritage" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="project-card-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8">
+                            <h4 class="text-3xl font-bold text-white mb-2 translate-y-4 group-hover:translate-y-0 transition duration-500">Immersive Heritage</h4>
+                            <p class="text-gray-300 mb-4 translate-y-4 group-hover:translate-y-0 transition duration-500 delay-75">Digital Preservation of History</p>
+                            <a href="details_heritage.html" class="inline-block bg-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold w-max translate-y-4 group-hover:translate-y-0 transition duration-500 delay-100 hover:bg-purple-500">View Project</a>
+                        </div>
+                    </div>
+                    <div class="project-card relative h-96 group cursor-pointer">
+                        <img src="COVER (1).png" alt="Safety" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="project-card-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8">
+                            <h4 class="text-3xl font-bold text-white mb-2 translate-y-4 group-hover:translate-y-0 transition duration-500">Industrial Safety</h4>
+                            <p class="text-gray-300 mb-4 translate-y-4 group-hover:translate-y-0 transition duration-500 delay-75">VR Training Simulation</p>
+                            <a href="details_Safety.html" class="inline-block bg-green-600 text-white px-6 py-2 rounded-full text-sm font-semibold w-max translate-y-4 group-hover:translate-y-0 transition duration-500 delay-100 hover:bg-green-500">View Project</a>
+                        </div>
+                    </div>
+                     <div class="project-card relative h-96 group cursor-pointer">
+                        <img src="COVER (4).png" alt="Charaka" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="project-card-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8">
+                            <h4 class="text-3xl font-bold text-white mb-2 translate-y-4 group-hover:translate-y-0 transition duration-500">Charaka Herbarium</h4>
+                            <p class="text-gray-300 mb-4 translate-y-4 group-hover:translate-y-0 transition duration-500 delay-75">Virtual Herbal Garden</p>
+                            <a href="details_charaka.html" class="inline-block bg-pink-600 text-white px-6 py-2 rounded-full text-sm font-semibold w-max translate-y-4 group-hover:translate-y-0 transition duration-500 delay-100 hover:bg-pink-500">View Project</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="achievements-projects" class="portfolio-content hidden grid md:grid-cols-2 gap-8">
+                     <div class="project-card h-80 relative group">
+                        <img src="AC.jpg" class="w-full h-full object-cover">
+                         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
+                             <h4 class="text-xl font-bold text-yellow-400">Winner - 8th Horizon</h4>
+                             <p class="text-gray-300 text-sm">Hackathon by TANSAM</p>
+                         </div>
+                    </div>
+                    <div class="project-card h-80 relative group">
+                        <img src="AC.jpeg" class="w-full h-full object-cover">
+                         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
+                             <h4 class="text-xl font-bold text-yellow-400">Featured in DT Next</h4>
+                             <p class="text-gray-300 text-sm">AeroDefCon'25 Coverage</p>
+                         </div>
+                    </div>
+                    <div class="project-card h-80 relative group">
+                        <img src="https://placehold.co/600x400/C0C0C0/000000?text=Innovative Project Cell" class="w-full h-full object-cover">
+                         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
+                             <h4 class="text-xl font-bold text-yellow-400">iQuest 2025</h4>
+                             <p class="text-gray-300 text-sm">1st Place in IPC Competition</p>
+                         </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="contact" class="py-32 px-4 relative overflow-hidden">
+            <div class="absolute inset-0 bg-blue-900 opacity-20"></div>
+            <div class="max-w-3xl mx-auto text-center relative z-10">
+                <h3 class="text-5xl font-bold mb-6 text-white">Let's Build the Future</h3>
+                <p class="text-xl text-gray-400 mb-10">Have a project in mind or just want to say hello?</p>
+                <a href="mailto:chrnoffl@gmail.com" class="glow-button inline-block text-white px-10 py-4 rounded-full text-xl font-semibold">
+                    Start a Conversation
+                </a>
+                
+                <div class="mt-16 flex justify-center space-x-8">
+                    <a href="https://www.linkedin.com/in/charan-raj-7857b4257/" class="text-gray-400 hover:text-white transform hover:scale-125 transition-all text-3xl"><i class="fab fa-linkedin"></i></a>
+                    <a href="https://github.com/ChrnCj" class="text-gray-400 hover:text-white transform hover:scale-125 transition-all text-3xl"><i class="fab fa-github"></i></a>
+                    <a href="https://www.instagram.com/chrn_cj/" class="text-gray-400 hover:text-pink-500 transform hover:scale-125 transition-all text-3xl"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="py-8 bg-black text-gray-500 text-center text-sm border-t border-gray-800">
+            <p>&copy; 2025 Charan Raj. Crafted in the Metaverse.</p>
+        </footer>
+    </div>
+
+    <div id="graphic-design-image-modal" class="graphic-design-modal">
+        <div class="graphic-design-modal-content">
+            <img src="" alt="Full-size" id="modal-graphic-design-image">
+        </div>
+    </div>
+    <div id="cursor-dot"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cursorDot = document.getElementById('cursor-dot');
+            const introOverlay = document.getElementById('intro-overlay');
+            const mainContent = document.getElementById('main-content');
+            const introVideo = document.getElementById('intro-video');
+
+            // --- Custom Cursor ---
+            document.addEventListener('mousemove', (e) => {
+                cursorDot.style.left = e.clientX + 'px';
+                cursorDot.style.top = e.clientY + 'px';
+                if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || e.target.closest('.project-card')) {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                } else {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+                }
+            });
+
+            // --- Tab Logic ---
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.portfolio-content');
+
+            // --- SAVE scroll BEFORE navigating to details pages ---
+            document.querySelectorAll('a[href*="details_"]').forEach(link => {
+                link.addEventListener('click', () => {
+                    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+                    const currentActiveTab = document.querySelector('.tab-btn.active-tab');
+                    if (currentActiveTab) sessionStorage.setItem('activeTab', currentActiveTab.dataset.domain);
+                });
+            });
+
+            // --- Restore State Logic ---
+            const scrollPosition = sessionStorage.getItem('scrollPosition');
+            const activeTab = sessionStorage.getItem('activeTab');
+            const introPlayed = sessionStorage.getItem('introPlayed');
+
+            const showContent = () => {
+                 introOverlay.style.display = 'none';
+                 mainContent.style.opacity = 1;
+                 
+                 if (scrollPosition && activeTab) {
+                    tabBtns.forEach(b => b.classList.toggle('active-tab', b.dataset.domain === activeTab));
+                    contents.forEach(c => c.classList.toggle('hidden', c.id !== `${activeTab}-projects`));
+                    window.scrollTo(0, parseInt(scrollPosition, 10));
+                    sessionStorage.removeItem('scrollPosition');
+                    sessionStorage.removeItem('activeTab');
+                 }
+            };
+
+            if (introPlayed === 'true') {
+                 showContent();
+            } else {
+                 introVideo.addEventListener('ended', () => {
+                     introOverlay.style.opacity = 0;
+                     setTimeout(() => {
+                         showContent();
+                         sessionStorage.setItem('introPlayed', 'true');
+                     }, 500);
+                 });
+            }
+
+            // --- Tab Click ---
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active-tab'));
+                    btn.classList.add('active-tab');
+                    const domain = btn.getAttribute('data-domain');
+                    contents.forEach(content => {
+                        content.classList.toggle('hidden', content.id !== `${domain}-projects`);
+                    });
+                });
+            });
+             
+             // --- Image Modal Logic ---
+             const modal = document.getElementById('graphic-design-image-modal');
+             const modalImg = document.getElementById('modal-graphic-design-image');
+             
+             document.querySelectorAll('.graphic-design-item').forEach(item => {
+                 item.addEventListener('click', () => {
+                     const img = item.querySelector('img');
+                     if(img) {
+                        modalImg.src = img.src;
+                        modal.classList.add('active');
+                     }
+                 });
+             });
+             
+             modal.addEventListener('click', () => {
+                 modal.classList.remove('active');
+             });
+        });
+    </script>
+</body>
+</html>
