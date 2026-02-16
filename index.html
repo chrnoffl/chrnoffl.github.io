@@ -103,8 +103,6 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.2s; }
         
-        #intro-overlay { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; justify-content: center; align-items: center; }
-        
         /* Modal */
         .graphic-design-modal {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000;
@@ -119,7 +117,7 @@
     <div class="tech-bg"></div>
     <div class="grid-overlay"></div>
 
-    <div id="main-content" style="opacity: 1;">
+    <div id="main-content">
         
         <header id="main-header" class="fixed top-0 left-0 w-full glass-nav py-4 px-6 z-50 flex justify-between items-center transition-all duration-300">
             <div class="text-2xl font-bold tracking-wider gradient-text">CHARAN RAJ</div>
@@ -381,7 +379,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cursorDot = document.getElementById('cursor-dot');
-            const mainContent = document.getElementById('main-content');
+
             // --- Custom Cursor ---
             document.addEventListener('mousemove', (e) => {
                 cursorDot.style.left = e.clientX + 'px';
@@ -392,14 +390,6 @@
                     cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
                 }
             });
-                       // --- Restore scroll & active tab (no intro video) ---
-            if (scrollPosition && activeTab) {
-                tabBtns.forEach(b => b.classList.toggle('active-tab', b.dataset.domain === activeTab));
-                contents.forEach(c => c.classList.toggle('hidden', c.id !== `${activeTab}-projects`));
-                window.scrollTo(0, parseInt(scrollPosition, 10));
-                sessionStorage.removeItem('scrollPosition');
-                sessionStorage.removeItem('activeTab');
-            }
 
             // --- Tab Logic ---
             const tabBtns = document.querySelectorAll('.tab-btn');
@@ -417,7 +407,14 @@
             // --- Restore State Logic ---
             const scrollPosition = sessionStorage.getItem('scrollPosition');
             const activeTab = sessionStorage.getItem('activeTab');
-            
+
+            if (scrollPosition && activeTab) {
+                tabBtns.forEach(b => b.classList.toggle('active-tab', b.dataset.domain === activeTab));
+                contents.forEach(c => c.classList.toggle('hidden', c.id !== `${activeTab}-projects`));
+                window.scrollTo(0, parseInt(scrollPosition, 10));
+                sessionStorage.removeItem('scrollPosition');
+                sessionStorage.removeItem('activeTab');
+            }
 
             // --- Tab Click ---
             tabBtns.forEach(btn => {
@@ -451,6 +448,4 @@
         });
     </script>
 </body>
-
 </html>
-
