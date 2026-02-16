@@ -119,13 +119,7 @@
     <div class="tech-bg"></div>
     <div class="grid-overlay"></div>
 
-    <div id="intro-overlay">
-        <video id="intro-video" class="absolute inset-0 w-full h-full object-cover opacity-80" autoplay muted playsinline>
-            <source src="intro2.mp4" type="video/mp4">
-        </video>
-    </div>
-
-    <div id="main-content" style="opacity: 0; transition: opacity 1s ease;">
+    <div id="main-content" style="opacity: 1;">
         
         <header id="main-header" class="fixed top-0 left-0 w-full glass-nav py-4 px-6 z-50 flex justify-between items-center transition-all duration-300">
             <div class="text-2xl font-bold tracking-wider gradient-text">CHARAN RAJ</div>
@@ -387,9 +381,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cursorDot = document.getElementById('cursor-dot');
-            const introOverlay = document.getElementById('intro-overlay');
             const mainContent = document.getElementById('main-content');
-            const introVideo = document.getElementById('intro-video');
+                        // --- Restore scroll & active tab (no intro video) ---
+            if (scrollPosition && activeTab) {
+                tabBtns.forEach(b => b.classList.toggle('active-tab', b.dataset.domain === activeTab));
+                contents.forEach(c => c.classList.toggle('hidden', c.id !== `${activeTab}-projects`));
+                window.scrollTo(0, parseInt(scrollPosition, 10));
+                sessionStorage.removeItem('scrollPosition');
+                sessionStorage.removeItem('activeTab');
+            }
+
 
             // --- Custom Cursor ---
             document.addEventListener('mousemove', (e) => {
@@ -418,32 +419,7 @@
             // --- Restore State Logic ---
             const scrollPosition = sessionStorage.getItem('scrollPosition');
             const activeTab = sessionStorage.getItem('activeTab');
-            const introPlayed = sessionStorage.getItem('introPlayed');
-
-            const showContent = () => {
-                 introOverlay.style.display = 'none';
-                 mainContent.style.opacity = 1;
-                 
-                 if (scrollPosition && activeTab) {
-                    tabBtns.forEach(b => b.classList.toggle('active-tab', b.dataset.domain === activeTab));
-                    contents.forEach(c => c.classList.toggle('hidden', c.id !== `${activeTab}-projects`));
-                    window.scrollTo(0, parseInt(scrollPosition, 10));
-                    sessionStorage.removeItem('scrollPosition');
-                    sessionStorage.removeItem('activeTab');
-                 }
-            };
-
-            if (introPlayed === 'true') {
-                 showContent();
-            } else {
-                 introVideo.addEventListener('ended', () => {
-                     introOverlay.style.opacity = 0;
-                     setTimeout(() => {
-                         showContent();
-                         sessionStorage.setItem('introPlayed', 'true');
-                     }, 500);
-                 });
-            }
+            
 
             // --- Tab Click ---
             tabBtns.forEach(btn => {
@@ -477,4 +453,5 @@
         });
     </script>
 </body>
+
 </html>
