@@ -382,16 +382,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const cursorDot = document.getElementById('cursor-dot');
             const mainContent = document.getElementById('main-content');
-                        // --- Restore scroll & active tab (no intro video) ---
-            if (scrollPosition && activeTab) {
-                tabBtns.forEach(b => b.classList.toggle('active-tab', b.dataset.domain === activeTab));
-                contents.forEach(c => c.classList.toggle('hidden', c.id !== `${activeTab}-projects`));
-                window.scrollTo(0, parseInt(scrollPosition, 10));
-                sessionStorage.removeItem('scrollPosition');
-                sessionStorage.removeItem('activeTab');
-            }
-
-
             // --- Custom Cursor ---
             document.addEventListener('mousemove', (e) => {
                 cursorDot.style.left = e.clientX + 'px';
@@ -402,6 +392,14 @@
                     cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
                 }
             });
+                       // --- Restore scroll & active tab (no intro video) ---
+            if (scrollPosition && activeTab) {
+                tabBtns.forEach(b => b.classList.toggle('active-tab', b.dataset.domain === activeTab));
+                contents.forEach(c => c.classList.toggle('hidden', c.id !== `${activeTab}-projects`));
+                window.scrollTo(0, parseInt(scrollPosition, 10));
+                sessionStorage.removeItem('scrollPosition');
+                sessionStorage.removeItem('activeTab');
+            }
 
             // --- Tab Logic ---
             const tabBtns = document.querySelectorAll('.tab-btn');
@@ -455,3 +453,4 @@
 </body>
 
 </html>
+
